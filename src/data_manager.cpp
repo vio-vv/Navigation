@@ -98,7 +98,7 @@ DataManager::~DataManager()
     cellBucket.clear();
 }
 
-std::set<const Node*> DataManager::DataManager::hashSearch(int left,int right,int top,int bottom,int level)
+std::set<const Node*> DataManager::hashSearch(int left,int right,int top,int bottom,int level)
 {
     std::set<const Node*> result;
     int xmin=std::min(left,right);

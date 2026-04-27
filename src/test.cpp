@@ -29,16 +29,72 @@ void sameConstructorTest();
 void nullConstructorTest();
 
 /**
+ * @brief 测试均匀网格哈希查找
+ * @note 测试一般情况
+ */
+void hashSearchTest();
+
+/**
+ * @brief 测试均匀网格哈希查找
+ * @note 反向边界
+ */
+void hashSearchReverseBoundaryTest();
+
+/**
+ * @brief 测试均匀网格哈希查找
+ * @note 点在边界上
+ */
+void hashSearchOnBoundaryTest();
+
+/**
+ * @brief 测试均匀网格哈希查找
+ * @note 点在边界外
+ */
+void hashSearchOutsideBoundaryTest();
+
+/**
+ * @brief 测试均匀网格哈希查找
+ * @note 边界在图外
+ */
+void hashSearchOutsideGraphTest();
+
+/** 
+ * @brief 测试均匀网格哈希查找
+ * @note 边界和图重叠
+*/
+void hashSearchOnGraphTest();
+
+/**
+ * @brief 测试均匀网格哈希查找
+ * @note 边界重叠
+ */
+void hashSearchOverlapBoundaryTest();
+
+/**
+ * @brief 测试均匀网格哈希查找
+ * @note 图中有nullptr节点
+ */
+void hashSearchNullNodeTest();
+
+/**
  * @brief 测试函数
  */
 int main()
 {
     if(LAB_TEST)
     {
-        normalConstructorTest();
-        emptyConstructorTest();
-        sameConstructorTest();
-        nullConstructorTest();
+       normalConstructorTest();
+       emptyConstructorTest();
+       sameConstructorTest();
+       nullConstructorTest();
+       hashSearchTest();
+       hashSearchReverseBoundaryTest();
+       hashSearchOnBoundaryTest();
+       hashSearchOutsideBoundaryTest();
+       hashSearchOutsideGraphTest();
+       hashSearchOnGraphTest();
+       hashSearchOverlapBoundaryTest();
+       hashSearchNullNodeTest();
     }
 }
 
@@ -122,4 +178,190 @@ void nullConstructorTest()
     assert(dataManager.getCellWidth()==1);
     assert(dataManager.getCellHeight()==1);
     dataManager.printCellBucket();
+}
+
+/*
+A: (0, 0),B: (2, 1),C: (5, 5)
+D: (-2, 3),E: (3, -1),F: (10, 10)
+*/
+void hashSearchTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 1, {1}},
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        new Node{"E", {}, 3, -1, {4}},
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(-1,3,2,-1,0);
+    assert(result.size()==3);
+    for(auto it:result)
+    {
+        assert(it->name=="A" || it->name=="B" || it->name=="E");
+    }
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void hashSearchReverseBoundaryTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 1, {1}},
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        new Node{"E", {}, 3, -1, {4}},
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(3,-1,-1,2,0);
+    assert(result.size()==3);
+    for(auto it:result)
+    {
+        assert(it->name=="A" || it->name=="B" || it->name=="E");
+    }
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void hashSearchOnBoundaryTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 1, {1}},
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        new Node{"E", {}, 3, -1, {4}},
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(0,2,1,0,0);
+    assert(result.size()==2);
+    for(auto it:result)
+    {
+        assert(it->name=="A" || it->name=="B");
+    }
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void hashSearchOutsideBoundaryTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 1, {1}},
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        new Node{"E", {}, 3, -1, {4}},
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(6,7,7,6,0);
+    assert(result.size()==0);
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void hashSearchOutsideGraphTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 1, {1}},
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        new Node{"E", {}, 3, -1, {4}},
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(-100,1,1,-100,0);
+    assert(result.size()==1);
+    assert((*result.begin())->name=="A");
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void hashSearchOnGraphTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 1, {1}},
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        new Node{"E", {}, 3, -1, {4}},
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(-100,0,3,-100,0);
+    assert(result.size()==2);
+    for(auto it:result)
+    {
+        assert(it->name=="A" || it->name=="D");
+    }
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void hashSearchOverlapBoundaryTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 1, {1}},
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        new Node{"E", {}, 3, -1, {4}},
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(10,10,10,10,0);
+    assert(result.size()==1);
+    assert((*result.begin())->name=="F");
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void hashSearchNullNodeTest()
+{
+    std::set<const Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        nullptr,
+        new Node{"C", {}, 5, 5, {2}},
+        new Node{"D", {}, -2, 3, {3}},
+        nullptr,
+        new Node{"F", {}, 10, 10, {5}}
+    };
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    auto result=dataManager.hashSearch(-2,0,3,0,0);
+    assert(result.size()==2);
+    for(auto it:result)
+    {
+        assert(it->name=="A" || it->name=="D");
+    }
+    for(auto it:nodes)
+    {
+        delete it;
+    }
 }
