@@ -133,3 +133,37 @@ std::set<const Node*> DataManager::hashSearch(int left,int right,int top,int bot
     }
     return result;
 }
+
+//todo 为什么没有传点进来
+std::priority_queue<Distancecmp> DataManager::priorityQueueSearch(int left,int right,int top,int bottom,int level)
+{
+    std::priority_queue<Distancecmp> result;
+    int centerX=(left+right)/2;
+    int centerY=(top+bottom)/2;
+    std::unordered_set<const Node*> uniqueSet;
+    const int MAX_SIZE=100;
+    while(result.size() != 100 && left >= leftBound && right <= rightBound && top <= topBound && bottom >= bottomBound)
+    {
+        std::set<const Node*> nodeSet=hashSearch(left,right,top,bottom,level);
+        for(const auto& node:nodeSet)
+        {
+            if(uniqueSet.find(node) != uniqueSet.end())
+            {
+                continue;
+            }
+            uniqueSet.insert(node);
+            double distance=std::sqrt(std::pow(node->x-centerX,2)+std::pow(node->y-centerY,2));
+            result.push({distance,node});
+            //100 后续可能不会写死
+            if(result.size()>MAX_SIZE)
+            {
+                result.pop();
+            }
+        }
+        left-=MAX_SIZE/2;
+        right+=MAX_SIZE/2;
+        top+=MAX_SIZE/2;
+        bottom-=MAX_SIZE/2;
+    }
+    return result;
+}
