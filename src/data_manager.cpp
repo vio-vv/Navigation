@@ -167,3 +167,27 @@ std::priority_queue<Distancecmp> DataManager::priorityQueueSearch(int left,int r
     }
     return result;
 }
+
+Graph DataManager::GraphqueryDataInViewport(int left, int right, int top, int bottom, int level)
+{
+    std::set<const Node*> nodeSet;
+    std::priority_queue<Distancecmp> topNodes=priorityQueueSearch(left,right,top,bottom,level);
+    while (!topNodes.empty())
+    {
+        const Node* node=topNodes.top().second;
+        topNodes.pop();
+        nodeSet.insert(node);
+    }
+    std::set<const Edge*> edgeSet;
+    for(const auto& node:nodeSet)
+    {
+        for(const auto& edge:node->edges)
+        {
+            if(nodeSet.find(edge->from) != nodeSet.end() && nodeSet.find(edge->to) != nodeSet.end())
+            {
+                edgeSet.insert(edge);
+            }
+        }
+    }
+    return {nodeSet,edgeSet};
+}

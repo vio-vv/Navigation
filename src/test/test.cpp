@@ -83,13 +83,18 @@ void hashSearchNullNodeTest();
 void priorityQueueSearchBasicTopKTest();
 
 /**
+ * @brief 测试GraphqueryDataInViewport函数
+ * 
+ */
+void GraphqueryDataInViewportTest();
+
+/**
  * @brief 测试函数
  */
 int main()
 {
     if(LAB_TEST)
     {
-        /*
        normalConstructorTest();
        emptyConstructorTest();
        sameConstructorTest();
@@ -102,8 +107,8 @@ int main()
        hashSearchOnGraphTest();
        hashSearchOverlapBoundaryTest();
        hashSearchNullNodeTest();
-       */
        priorityQueueSearchBasicTopKTest();
+       GraphqueryDataInViewportTest();
     }
 }
 
@@ -416,6 +421,56 @@ void priorityQueueSearchBasicTopKTest()
     assert(nodeName.find("R") == nodeName.end());
     assert(nodeName.find("T") == nodeName.end());
     assert(nodeName.find("B") == nodeName.end());
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void GraphqueryDataInViewportTest()
+{
+    std::set<Node*> nodes={
+        new Node{"A", {}, 0, 0, {0}},
+        new Node{"B", {}, 2, 0, {1}},
+        new Node{"C", {}, 4, 0, {2}},
+        new Node{"D", {}, 8, 0, {3}},
+    };
+    std::set<Edge*> edges={
+        new Edge{"AB",nullptr,nullptr, 2.2360679775, 100, 1.0, 1.0},
+        new Edge{"BC", nullptr, nullptr, 4.472135955, 100, 1.0, 1.0},
+        new Edge{"CD", nullptr, nullptr,8.94427191 ,100 ,1.0 ,1.0},
+        new Edge{"BD", nullptr, nullptr, 8.94427191, 100, 1.0, 1.0}
+    };
+    for(auto edge:edges)
+    {
+        for(auto node:nodes)
+        {
+            if(edge->name[0]==node->name[0])
+            {
+                edge->from=node;
+                node->edges.push_back(edge);
+            }
+            if(edge->name[1]==node->name[0])
+            {
+                edge->to=node;
+                node->edges.push_back(edge);
+            }
+        }
+    }
+    std::set<const Node*> constNodes(nodes.begin(), nodes.end());
+    std::set<const Edge*> constEdges(edges.begin(), edges.end());
+    Graph graph={constNodes,constEdges};
+    DataManager dataManager(graph);
+    auto result=dataManager.GraphqueryDataInViewport(0,4,0,0,0);
+    assert(result.first.size()==3);
+    assert(result.second.size()==2);
+    for(auto it:result.first)   {
+        assert(it->name=="A" || it->name=="B" || it->name=="C");            
+    }
+    for(auto it:result.second)
+    {
+        assert(it->name=="AB" || it->name=="BC");
+    }
     for(auto it:nodes)
     {
         delete it;
