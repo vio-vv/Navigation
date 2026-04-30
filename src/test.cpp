@@ -77,6 +77,12 @@ void hashSearchOverlapBoundaryTest();
 void hashSearchNullNodeTest();
 
 /**
+ * @brief 测试 priorityQueueSearch 的基础 TopK 点初始化
+ * @note 仅初始化点集，不补断言与查询逻辑
+ */
+void priorityQueueSearchBasicTopKTest();
+
+/**
  * @brief 测试函数
  */
 int main()
@@ -95,6 +101,7 @@ int main()
        hashSearchOnGraphTest();
        hashSearchOverlapBoundaryTest();
        hashSearchNullNodeTest();
+       priorityQueueSearchBasicTopKTest();
     }
 }
 
@@ -360,6 +367,37 @@ void hashSearchNullNodeTest()
     {
         assert(it->name=="A" || it->name=="D");
     }
+    for(auto it:nodes)
+    {
+        delete it;
+    }
+}
+
+void priorityQueueSearchBasicTopKTest()
+{
+    std::set<const Node*> nodes;
+    for(int i=1;i<=101;i++)
+    {
+        std::string suffix=std::to_string(i);
+        if(i<10)
+        {
+            suffix="00"+suffix;
+        }
+        else if(i<100)
+        {
+            suffix="0"+suffix;
+        }
+        nodes.insert(new Node{"K"+suffix, {}, 0.1*i, 0, {i}});
+    }
+    nodes.insert(new Node{"L", {}, -100, 0, {102}});
+    nodes.insert(new Node{"R", {}, 100, 0, {103}});
+    nodes.insert(new Node{"T", {}, 0, 100, {104}});
+    nodes.insert(new Node{"B", {}, 0, -100, {105}});
+
+    Graph graph={nodes,{}};
+    DataManager dataManager(graph);
+    (void)dataManager;
+
     for(auto it:nodes)
     {
         delete it;
