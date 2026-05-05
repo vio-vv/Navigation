@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-<<<<<<< HEAD
-"""Preview Poisson disk samples for the navigation data generator."""
-=======
 """Preview raw planar graphs for the navigation data generator."""
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
+"""Preview Poisson disk samples for the navigation data generator."""
 
 from __future__ import annotations
 
@@ -22,8 +19,6 @@ class Point:
     name: str
     x: float
     y: float
-<<<<<<< HEAD
-=======
     address: tuple[int, ...] = ()
     level: int = 0
 
@@ -42,7 +37,6 @@ class Edge:
 class GraphData:
     points: list[Point]
     edges: list[Edge]
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
 
 
 def poisson_disk_sample(
@@ -69,18 +63,8 @@ def poisson_disk_sample(
         raise ValueError("bounds must enclose a positive area")
 
     if radius is None or radius <= 0:
-<<<<<<< HEAD
-        radius = math.sqrt(width * height * 0.7 / target_count)
-
-    rng = random.Random(seed)
-    cell_size = radius / math.sqrt(2.0)
-    cols = max(1, math.ceil(width / cell_size))
-    rows = max(1, math.ceil(height / cell_size))
-    grid: list[int | None] = [None] * (cols * rows)
-    points: list[Point] = []
-    active: list[int] = []
-=======
         radius = math.sqrt(width * height * 0.45 / target_count)
+        radius = math.sqrt(width * height * 0.7 / target_count)
 
     rng = random.Random(seed)
     nominal_radius = max(radius, 1e-9)
@@ -93,36 +77,35 @@ def poisson_disk_sample(
     grid: list[list[int]] = [[] for _ in range(cols * rows)]
     points: list[Point] = []
     point_radii: list[float] = []
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
 
     def grid_xy(point: Point) -> tuple[int, int]:
         gx = min(cols - 1, max(0, int((point.x - left) / cell_size)))
         gy = min(rows - 1, max(0, int((point.y - bottom) / cell_size)))
         return gx, gy
 
-<<<<<<< HEAD
-    def add_point(point: Point) -> None:
-        gx, gy = grid_xy(point)
-        grid[gy * cols + gx] = len(points)
-        active.append(len(points))
-        points.append(point)
-
-    def valid(x: float, y: float) -> bool:
-=======
     def add_point(point: Point, point_radius: float) -> None:
+    def add_point(point: Point) -> None:
         gx, gy = grid_xy(point)
         grid[gy * cols + gx].append(len(points))
         points.append(point)
         point_radii.append(point_radius)
 
     def valid(x: float, y: float, candidate_radius: float, query_radius: float) -> bool:
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
         if x < left or x > right or y < bottom or y > top:
             return False
 
         gx = min(cols - 1, max(0, int((x - left) / cell_size)))
         gy = min(rows - 1, max(0, int((y - bottom) / cell_size)))
-<<<<<<< HEAD
+        cell_range = max(1, math.ceil(query_radius / cell_size))
+        for yy in range(max(0, gy - cell_range), min(rows, gy + cell_range + 1)):
+            for xx in range(max(0, gx - cell_range), min(cols, gx + cell_range + 1)):
+                for idx in grid[yy * cols + xx]:
+                    other = points[idx]
+                    dx = x - other.x
+                    dy = y - other.y
+                    local_radius = min(candidate_radius, point_radii[idx])
+                    if dx * dx + dy * dy < local_radius * local_radius:
+                        return False
         radius_sq = radius * radius
         for yy in range(max(0, gy - 2), min(rows, gy + 3)):
             for xx in range(max(0, gx - 2), min(cols, gx + 3)):
@@ -134,40 +117,6 @@ def poisson_disk_sample(
                 dy = y - other.y
                 if dx * dx + dy * dy < radius_sq:
                     return False
-        return True
-
-    add_point(Point("N0", rng.uniform(left, right), rng.uniform(bottom, top)))
-
-    while active and len(points) < target_count:
-        parent_idx = rng.choice(active)
-        parent = points[parent_idx]
-        found = False
-
-        for _ in range(attempts):
-            distance = rng.uniform(radius, radius * 2.0)
-            angle = rng.uniform(0.0, math.tau)
-            x = parent.x + distance * math.cos(angle)
-            y = parent.y + distance * math.sin(angle)
-
-            if valid(x, y):
-                add_point(Point(f"N{len(points)}", x, y))
-                found = True
-                if len(points) >= target_count:
-                    break
-
-        if not found:
-            active.remove(parent_idx)
-=======
-        cell_range = max(1, math.ceil(query_radius / cell_size))
-        for yy in range(max(0, gy - cell_range), min(rows, gy + cell_range + 1)):
-            for xx in range(max(0, gx - cell_range), min(cols, gx + cell_range + 1)):
-                for idx in grid[yy * cols + xx]:
-                    other = points[idx]
-                    dx = x - other.x
-                    dy = y - other.y
-                    local_radius = min(candidate_radius, point_radii[idx])
-                    if dx * dx + dy * dy < local_radius * local_radius:
-                        return False
         return True
 
     failed_attempts = 0
@@ -195,7 +144,6 @@ def poisson_disk_sample(
             min_radius *= 0.94
             max_radius *= 0.94
             failed_attempts = 0
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
 
     return points, radius
 
@@ -211,28 +159,8 @@ def nearest_distance(points: Iterable[Point]) -> float | None:
     return best
 
 
-<<<<<<< HEAD
-def write_csv(path: Path, points: list[Point]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
-        writer.writerow(["name", "x", "y"])
-        for point in points:
-            writer.writerow([point.name, point.x, point.y])
-
-
-def read_csv_rows(handle: TextIO) -> list[Point]:
-    points: list[Point] = []
-    reader = csv.DictReader(handle)
-    for idx, row in enumerate(reader):
-        name = row.get("name") or f"N{idx}"
-        points.append(Point(name, float(row["x"]), float(row["y"])))
-    return points
-
-
-def read_csv(path: Path) -> list[Point]:
-=======
 def write_csv(path: Path, graph: GraphData) -> None:
+def write_csv(path: Path, points: list[Point]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
@@ -321,7 +249,6 @@ def read_csv_rows(handle: TextIO) -> GraphData:
 
 
 def read_csv(path: Path) -> GraphData:
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
     with path.open("r", newline="", encoding="utf-8") as handle:
         return read_csv_rows(handle)
 
@@ -343,10 +270,7 @@ def bounds_from_points(points: list[Point]) -> tuple[float, float, float, float]
 
 def plot_points(
     points: list[Point],
-<<<<<<< HEAD
-=======
     edges: list[Edge],
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
     left: float,
     right: float,
     bottom: float,
@@ -359,14 +283,6 @@ def plot_points(
 ) -> None:
     import matplotlib.pyplot as plt
     from matplotlib.patches import Circle
-<<<<<<< HEAD
-
-    fig, ax = plt.subplots(figsize=(8, 8))
-    xs = [point.x for point in points]
-    ys = [point.y for point in points]
-
-    ax.scatter(xs, ys, s=18, color="#2563eb", edgecolors="#0f172a", linewidths=0.35)
-=======
     from matplotlib.collections import LineCollection
 
     fig, ax = plt.subplots(figsize=(30, 30))
@@ -454,7 +370,6 @@ def plot_points(
             zorder=3,
         )
 
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
     if show_radius:
         for point in points:
             ax.add_patch(
@@ -488,11 +403,8 @@ def plot_points(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-<<<<<<< HEAD
-        description="Generate and preview a simple Poisson disk sample."
-=======
         description="Generate and preview a raw planar navigation graph."
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
+        description="Generate and preview a simple Poisson disk sample."
     )
     parser.add_argument("-n", "--count", type=int, default=200, help="target point count")
     parser.add_argument("--left", type=float, default=0.0)
@@ -506,19 +418,12 @@ def parse_args() -> argparse.Namespace:
         "--input-csv",
         type=Path,
         default=None,
-<<<<<<< HEAD
-        help="plot existing points from a CSV with x and y columns",
-    )
-    parser.add_argument("--stdin", action="store_true", help="read point CSV from stdin")
-    parser.add_argument("--save", type=Path, default=None, help="save preview image")
-    parser.add_argument("--csv", type=Path, default=None, help="write generated points as CSV")
-=======
         help="plot an existing graph CSV with node and edge rows",
+        help="plot existing points from a CSV with x and y columns",
     )
     parser.add_argument("--stdin", action="store_true", help="read graph CSV from stdin")
     parser.add_argument("--save", type=Path, default=None, help="save preview image")
     parser.add_argument("--csv", type=Path, default=None, help="write generated graph CSV")
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
     parser.add_argument("--no-show", action="store_true", help="do not open a plot window")
     parser.add_argument(
         "--show-radius",
@@ -531,17 +436,14 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     if args.stdin:
-<<<<<<< HEAD
-        points = read_csv_rows(sys.stdin)
-        radius = args.radius or 0.0
-    elif args.input_csv:
-        points = read_csv(args.input_csv)
-=======
         graph = read_csv_rows(sys.stdin)
         radius = args.radius or 0.0
     elif args.input_csv:
         graph = read_csv(args.input_csv)
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
+        points = read_csv_rows(sys.stdin)
+        radius = args.radius or 0.0
+    elif args.input_csv:
+        points = read_csv(args.input_csv)
         radius = args.radius or 0.0
     else:
         points, radius = poisson_disk_sample(
@@ -554,13 +456,6 @@ def main() -> None:
             args.attempts,
             args.seed,
         )
-<<<<<<< HEAD
-    closest = nearest_distance(points)
-    if args.stdin:
-        print(f"loaded from stdin: {len(points)}")
-    elif args.input_csv:
-        print(f"loaded: {len(points)}")
-=======
         graph = GraphData(points, [])
     points = graph.points
     edges = graph.edges
@@ -569,7 +464,6 @@ def main() -> None:
         print(f"loaded from stdin: {len(points)} nodes, {len(edges)} edges")
     elif args.input_csv:
         print(f"loaded: {len(points)} nodes, {len(edges)} edges")
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
     else:
         print(f"generated: {len(points)} / {args.count}")
         print(f"radius: {radius:.4f}")
@@ -577,15 +471,13 @@ def main() -> None:
         print(f"nearest distance: {closest:.4f}")
 
     if args.csv:
-<<<<<<< HEAD
+        write_csv(args.csv, graph)
+        print(f"csv: {args.csv}")
+
         write_csv(args.csv, points)
         print(f"csv: {args.csv}")
 
     title = f"Poisson disk sample: {len(points)} points, r={radius:.2f}"
-=======
-        write_csv(args.csv, graph)
-        print(f"csv: {args.csv}")
-
     level_count = 0
     if points:
         level_count = max((len(point.address) for point in points), default=0)
@@ -595,7 +487,6 @@ def main() -> None:
         title = f"Raw planar graph: {len(points)} nodes, {len(edges)} edges, {level_count} levels"
     else:
         title = f"Poisson disk sample: {len(points)} points, r={radius:.2f}"
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
     if args.stdin or args.input_csv:
         left, right, bottom, top = bounds_from_points(points)
     else:
@@ -606,10 +497,7 @@ def main() -> None:
 
     plot_points(
         points,
-<<<<<<< HEAD
-=======
         edges,
->>>>>>> c7c9cb91529b0d0f11b58dacd4347cf0784c893d
         left,
         right,
         bottom,
